@@ -230,13 +230,68 @@ void gameBoardAddParticle(GameBoard* board, float x, float y, int color) {
 }
 
 int gameBoardCheckAndClearLines(GameBoard* board) {
-    // TODO: Recorrer la lista de RowNode.
-    // TODO: Si un RowNode tiene todas sus celdas > 0, desenlazarlo y hacer free().
-    // TODO: Crear un nuevo RowNode vacío (lleno de ceros).
-    // TODO: Insertar el nuevo RowNode en la CABEZA del tablero (board->first_row).
-    // TODO: Por cada celda destruida, invocar a gameBoardAddParticle().
-    printf("Función gameBoardCheckAndClearLines no implementada.\n");
-    return 0;
+    if (board == NULL) {
+        return 0;
+    }
+
+    int eliminadas = 0;
+    int r = 0;
+    RowNode* prev = NULL;
+    RowNode* curr = board->first_row;
+
+    while (curr != NULL) {
+        RowNode* next = curr->next;
+        int completa = 1;
+
+        for (int c = 0; c < GRID_COLS; c++) {
+            if (curr->cells[c] == 0) {
+                completa = 0;
+                break;
+            }
+        }
+
+        if (completa) {
+            RowNode* nueva = (RowNode*) malloc(sizeof(RowNode));
+
+            if (nueva == NULL) {
+                prev = curr;
+            }
+            else {
+                for (int c = 0; c < GRID_COLS; c++) {
+                    nueva->cells[c] = 0;
+                    gameBoardAddParticle(
+                        board,
+                        OFFSET_X + c * CELL_SIZE,
+                        OFFSET_Y + r * CELL_SIZE,
+                        curr->cells[c]
+                    );
+                }
+
+                if (prev == NULL) {
+                    board->first_row = next;
+                }
+                else {
+                    prev->next = next;
+                }
+                free(curr);
+
+                nueva->next = board->first_row;
+                board->first_row = nueva;
+
+                if (prev == NULL) {
+                    prev = nueva;
+                }
+                eliminadas++;
+            }
+        } else {
+            prev = curr;
+        }
+
+        curr = next;
+        r++;
+    }
+
+    return eliminadas;
 }
 
 void gameBoardEnqueuePiece(GameBoard* board, int type) {
