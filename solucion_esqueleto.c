@@ -191,7 +191,7 @@ GameBoard* gameBoardNew() {
 
 void gameBoardDelete(GameBoard* board) {
     if (board == NULL) {
-        return NULL;
+        return;
     }
     RowNode* curr = board->first_row;
     while (curr != NULL) {
@@ -489,42 +489,42 @@ int inicializar() {
 // ========= TESTS (COMPLETAR) =========
 
 void correrTests() {
-    /*strDuplicate*/
+    /* strDuplicate */
     char original_vacio[] = "";
     char* copia_vacio = strDuplicate(original_vacio);
-    printf("El output de strDuplicate('%s') deberia ser: %s", original_vacio, copia_vacio;);
+    printf("El output de strDuplicate('%s') deberia ser: '%s'. Output: '%s'\n", original_vacio, original_vacio, copia_vacio);
     free(copia_vacio);
 
     char original_x[] = "x";
     char* copia_x = strDuplicate(original_x);
-    printf("El output de strDuplicate('%s') deberia ser: %s", original_x, copia_x;);
+    printf("El output de strDuplicate('%s') deberia ser: '%s'. Output: '%s'\n", original_x, original_x, copia_x);
     free(copia_x);
 
     char original_hola[] = "Hola";
     char* copia_hola = strDuplicate(original_hola);
-    printf("El output de strDuplicate('%s') deberia ser: %s", original_hola, copia_hola;);
+    printf("El output de strDuplicate('%s') deberia ser: '%s'. Output: '%s'\n", original_hola, original_hola, copia_hola);
     free(copia_hola);
 
-    /*strCompare*/
+    /* strCompare */
     char s1_vacio[] = "";
     char s2_vacio[] = "";
     int comparacion_vacios = strCompare(s1_vacio, s2_vacio);
-    printf("El output de strCompare('%s', '%s') deberia ser 0: %d\n", s1_vacio, s2_vacio, comparacion_vacios);
+    printf("El output de strCompare('%s', '%s') deberia ser: 0. Output: %d\n", s1_vacio, s2_vacio, comparacion_vacios);
 
     char s1_igual[] = "a";
     char s2_igual[] = "a";
     int comparacion_iguales = strCompare(s1_igual, s2_igual);
-    printf("El output de strCompare('%s', '%s') deberia ser 0: %d\n", s1_igual, s2_igual, comparacion_iguales);
+    printf("El output de strCompare('%s', '%s') deberia ser: 0. Output: %d\n", s1_igual, s2_igual, comparacion_iguales);
 
     char s1_menor[] = "a";
     char s2_mayor[] = "b";
     int comparacion_menor = strCompare(s1_menor, s2_mayor);
-    printf("El output de strCompare('%s', '%s') deberia ser 1: %d\n", s1_menor, s2_mayor, comparacion_menor);
+    printf("El output de strCompare('%s', '%s') deberia ser: 1. Output: %d\n", s1_menor, s2_mayor, comparacion_menor);
 
     int comparacion_mayor = strCompare(s2_mayor, s1_menor);
-    printf("El output de strCompare('%s', '%s') deberia ser -1: %d\n", s2_mayor, s1_menor, comparacion_mayor);
+    printf("El output de strCompare('%s', '%s') deberia ser: -1. Output: %d\n", s2_mayor, s1_menor, comparacion_mayor);
 
-    /*strConcatenate*/
+    /* strConcatenate */
     char original_concat_vacio[] = "";
     char original_concat_abc[] = "abc";
     char* copia_concat_vacio = strDuplicate(original_concat_vacio);
@@ -541,7 +541,7 @@ void correrTests() {
     printf("El output de strConcatenate('%s', '%s') deberia ser: 'hola mundo'. Output: '%s'\n", original_concat_hola, original_concat_mundo, concatenado_2);
     free(concatenado_2);
 
-    /*gameBoardEnqueuePiece y gameBoardDequeuePiece*/
+    /* gameBoardEnqueuePiece y gameBoardDequeuePiece */
     GameBoard* board = gameBoardNew();
     if (board == NULL) {
         printf("No se pudo crear el tablero para los tests\n");
@@ -557,26 +557,26 @@ void correrTests() {
         int extrajo = gameBoardDequeuePiece(board, &out_type);
 
         if (i < 5) {
-            printf("El Pop %d deberia devolver 1 y type=%d. Output: %d y type=%d\n", i + 1, i, extrajo, out_type);
+            printf("El output de Pop %d deberia ser: 1 (type=%d). Output: %d (type=%d)\n", i + 1, i, extrajo, out_type);
         } else {
-            printf("El Pop 6 deberia devolver 0 y dejar type=-1. Output: %d y type=%d\n", extrajo, out_type);
+            printf("El output de Pop 6 deberia ser: 0 (type=-1). Output: %d (type=%d)\n", extrajo, out_type);
         }
     }
 
-    printf("queue_head y queue_tail deberian ser NULL (1 y 1). Output: %d y %d\n", board->queue_head == NULL, board->queue_tail == NULL);
+    printf("El output de cola vacia (head y tail NULL) deberia ser: 1 y 1. Output: %d y %d\n", board->queue_head == NULL, board->queue_tail == NULL);
 
-    /*gameBoardEnqueuePiece una vez más*/
+    /* Push y Pop posterior */
     gameBoardEnqueuePiece(board, 5);
     int out_type = -1;
     int extrajo = gameBoardDequeuePiece(board, &out_type);
-    printf("El Push y Pop posterior deberia devolver 1 y type=5. Output: %d y type=%d\n", extrajo, out_type);
+    printf("El output de Push y Pop posterior deberia ser: 1 (type=5). Output: %d (type=%d)\n", extrajo, out_type);
 
-        RowNode* fila_19 = getRowAt(board, 19);
+    /* Lógica de Tablero: Fila 19 */
+    RowNode* fila_19 = getRowAt(board, 19);
     for (int c = 0; c < GRID_COLS; c++) {
         fila_19->cells[c] = 1;
     }
 
-    /*gameBoardCheckAndClearLines con fila 19*/
     RowNode* primera_antes = board->first_row;
     int eliminadas_19 = gameBoardCheckAndClearLines(board);
 
@@ -595,12 +595,11 @@ void correrTests() {
         }
     }
 
-    printf("Al llenar la fila 19, eliminadas deberia ser 1. Output: %d\n", eliminadas_19);
-    printf("La primera fila deberia ser nueva y vacia (1 y 1). Output: %d y %d\n", primera_nueva, primera_vacia);
-    printf("La cantidad de filas deberia ser 20. Output: %d\n", cantidad_filas);
+    printf("El output de checkAndClearLines (fila 19) deberia ser: 1. Output: %d\n", eliminadas_19);
+    printf("El output de primera fila nueva y vacia deberia ser: 1 y 1. Output: %d y %d\n", primera_nueva, primera_vacia);
+    printf("El output de cantidad de filas deberia ser: 20. Output: %d\n", cantidad_filas);
 
-
-    /*gameBoardCheckAndClearLines con filas 0 y 1*/
+    /* Lógica de Tablero: Filas 0 y 1 */
     RowNode* fila_0 = getRowAt(board, 0);
     RowNode* fila_1 = getRowAt(board, 1);
     for (int c = 0; c < GRID_COLS; c++) {
@@ -617,8 +616,8 @@ void correrTests() {
         curr = curr->next;
     }
 
-    printf("Al llenar las filas 0 y 1, eliminadas deberia ser 2. Output: %d\n", eliminadas_01);
-    printf("La cantidad de filas deberia seguir siendo 20. Output: %d\n", cantidad_filas);
+    printf("El output de checkAndClearLines (filas 0 y 1) deberia ser: 2. Output: %d\n", eliminadas_01);
+    printf("El output de cantidad de filas deberia ser: 20. Output: %d\n", cantidad_filas);
 
     gameBoardDelete(board);
 }
