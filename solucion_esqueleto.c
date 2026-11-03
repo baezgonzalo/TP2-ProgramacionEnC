@@ -79,14 +79,17 @@ GameBoard* game_board = NULL;
 // ========= EJERCICIO 1: STRINGS (NO USAR string.h) =========
 
 char* strDuplicate(char* src) {
+    // Contamos los caracteres sin incluir el terminador '\0'.
     int len = 0;
     while (src[len] != '\0') {
         len++;
     }   
+    // Se reserva un byte adicional para el '\0' del nuevo string.
     char* copia = (char*) malloc (sizeof (char) * len + 1);
     if (copia == NULL) {
         return NULL;
     }
+    // La copia tiene memoria propia; no comparte caracteres con src.
     for (int i = 0; i < len; i++) {
         copia [i] = src[i];
     }
@@ -95,6 +98,7 @@ char* strDuplicate(char* src) {
 }
 
 int strCompare(char* s1, char* s2) {
+    // Los largos permiten comparar también cuando un string es prefijo del otro.
     int len1 = 0;
     int len2 = 0;
     int i = 0;
@@ -104,6 +108,7 @@ int strCompare(char* s1, char* s2) {
     while (s2[len2] != '\0') {
         len2++;
     }
+    // La consigna usa 1 si s1 es menor y -1 si s1 es mayor.
     while (i < len1 || i < len2) {
         if (s1[i] < s2[i]) {
             return 1;
@@ -115,10 +120,12 @@ int strCompare(char* s1, char* s2) {
             i++;
         }
     }
+    // Si no hubo diferencias hasta el final, los strings son iguales.
     return 0;
 }
 
 char* strConcatenate(char* src1, char* src2) {
+    // Primero contamos cuánta memoria requiere el resultado completo.
     int len1 = 0;
     int len2 = 0;
     while (src1[len1] != '\0') {
@@ -127,12 +134,14 @@ char* strConcatenate(char* src1, char* src2) {
     while (src2[len2] != '\0') {
         len2++;
     }
+    // El +1 guarda el '\0'; la función recibe la propiedad de ambos argumentos.
     char* nuevo = (char*) malloc (sizeof(char) * (len1 + len2 + 1));
     if (nuevo == NULL) {
         free(src1);
         free(src2);
         return NULL;
     }
+    // j marca el inicio de src2 dentro del nuevo arreglo.
     int j = 0;
     for (int i = 0; i < len1; i++) {
         nuevo[i] = src1[i];
@@ -142,6 +151,7 @@ char* strConcatenate(char* src1, char* src2) {
         nuevo[i] = src2[i - j];
     }
     nuevo[len1 + len2] = '\0';
+    // Se liberan las entradas después de copiar sus caracteres.
     free(src1);
     free(src2);
     return nuevo;
@@ -150,6 +160,7 @@ char* strConcatenate(char* src1, char* src2) {
 // ========= EJERCICIO 2: FUNCIONES A IMPLEMENTAR (EL TP) =========
 
 GameBoard* gameBoardNew() {
+    // Reservamos primero el tablero y dejamos sus punteros en NULL.
     GameBoard* board = (GameBoard*) malloc (sizeof(GameBoard));
     if (board == NULL) {
         return NULL;
@@ -165,10 +176,12 @@ GameBoard* gameBoardNew() {
     board->current_piece.type = 0;
     board->current_piece.rotation = 0;
     board->current_piece.active = 0;
+    // Cada fila es un nodo independiente, enlazado al inicio de la lista.
     for (int i = 0; i < GRID_ROWS; i++) {
         RowNode* node = (RowNode*) malloc(sizeof(RowNode));
 
         if (node == NULL) {
+            // Ante un fallo, liberamos todas las filas ya creadas y luego board.
             RowNode* curr = board->first_row;
             while (curr != NULL) {
                 RowNode* next = curr->next;
@@ -179,6 +192,7 @@ GameBoard* gameBoardNew() {
             return NULL;
         }
 
+        // Una fila nueva empieza con todas sus celdas vacías.
         for (int c = 0; c < GRID_COLS; c++) {
             node->cells[c] = 0;
         }
@@ -193,12 +207,14 @@ void gameBoardDelete(GameBoard* board) {
     if (board == NULL) {
         return;
     }
+    // Guardamos next antes de free para no leer memoria liberada.
     RowNode* curr = board->first_row;
     while (curr != NULL) {
         RowNode* next = curr->next;
         free(curr);
         curr = next;
     }
+    // La cola y las partículas también pertenecen al tablero.
     PieceQueueNode* curr_piece = board->queue_head; 
     while (curr_piece != NULL) {
         PieceQueueNode* next_piece = curr_piece->next;
@@ -211,10 +227,12 @@ void gameBoardDelete(GameBoard* board) {
         free(curr_piece2);
         curr_piece2 = next_piece2;
     }
+    // El tablero se libera al final, cuando ya no se usan sus punteros.
     free(board);
 }
 
 void gameBoardAddParticle(GameBoard* board, float x, float y, int color) {
+    // Cada partícula vive en un nodo propio hasta que se la elimina o borra el tablero.
     ParticleNode* node = (ParticleNode*) malloc (sizeof(ParticleNode));
     if (node == NULL) {
         return;
@@ -225,6 +243,7 @@ void gameBoardAddParticle(GameBoard* board, float x, float y, int color) {
     node->vel_x = (float)(rand() % 7 - 3);
     node->vel_y = -(float)(rand() % 4 + 1);
     node->life_timer = 30;
+    // Insertar en la cabeza requiere modificar solo first_particle.
     node->next = board->first_particle;
     board->first_particle = node;
 }
@@ -236,13 +255,16 @@ int gameBoardCheckAndClearLines(GameBoard* board) {
 
     int eliminadas = 0;
     int r = 0;
+    // prev sigue en la lista; curr es la fila que se está inspeccionando.
     RowNode* prev = NULL;
     RowNode* curr = board->first_row;
 
     while (curr != NULL) {
+        // next se guarda antes de que curr pueda ser liberado.
         RowNode* next = curr->next;
         int completa = 1;
 
+        // Una sola celda en 0 alcanza para que la fila no esté completa.
         for (int c = 0; c < GRID_COLS; c++) {
             if (curr->cells[c] == 0) {
                 completa = 0;
@@ -251,12 +273,15 @@ int gameBoardCheckAndClearLines(GameBoard* board) {
         }
 
         if (completa) {
+            // Reservamos el reemplazo antes de desenlazar curr.
             RowNode* nueva = (RowNode*) malloc(sizeof(RowNode));
 
             if (nueva == NULL) {
+                // Sin reemplazo, la fila original sigue enlazada.
                 prev = curr;
             }
             else {
+                // Las partículas leen el color antes de liberar la fila completa.
                 for (int c = 0; c < GRID_COLS; c++) {
                     nueva->cells[c] = 0;
                     gameBoardAddParticle(
@@ -267,6 +292,7 @@ int gameBoardCheckAndClearLines(GameBoard* board) {
                     );
                 }
 
+                // Se quita curr cambiando enlaces, sin copiar celdas de otras filas.
                 if (prev == NULL) {
                     board->first_row = next;
                 }
@@ -275,9 +301,11 @@ int gameBoardCheckAndClearLines(GameBoard* board) {
                 }
                 free(curr);
 
+                // La fila vacía se agrega arriba y repone el nodo eliminado.
                 nueva->next = board->first_row;
                 board->first_row = nueva;
 
+                // Si se borró la cabeza, nueva precede a la próxima fila original.
                 if (prev == NULL) {
                     prev = nueva;
                 }
@@ -295,12 +323,14 @@ int gameBoardCheckAndClearLines(GameBoard* board) {
 }
 
 void gameBoardEnqueuePiece(GameBoard* board, int type) {
+    // El nuevo nodo se agrega al final para mantener el orden FIFO.
     PieceQueueNode* node = (PieceQueueNode*) malloc(sizeof(PieceQueueNode));
     if (node == NULL) {
         return;
     }
     node->type = type;
     node->next = NULL;
+    // queue_tail evita recorrer toda la cola en cada inserción.
     if (board->queue_tail == NULL) {
         board->queue_head = node;
     } else {
@@ -310,13 +340,16 @@ void gameBoardEnqueuePiece(GameBoard* board, int type) {
 }
 
 int gameBoardDequeuePiece(GameBoard* board, int* out_type) {
+    // Si está vacía, no se escribe en out_type.
     if (board->queue_head == NULL) {
         return 0;
     }
     PieceQueueNode* node = board->queue_head;
     *out_type = node->type;
+    // La nueva cabeza es el nodo que seguía al extraído.
     board->queue_head = node->next;
 
+    // Si salió el último, la cabeza y la cola quedan en NULL.
     if (board->queue_head == NULL) {
         board->queue_tail = NULL;
     }
@@ -525,6 +558,7 @@ void correrTests() {
     printf("El output de strCompare('%s', '%s') deberia ser: -1. Output: %d\n", s2_mayor, s1_menor, comparacion_mayor);
 
     /* strConcatenate */
+    // Se pasan copias dinámicas porque strConcatenate libera sus argumentos.
     char original_concat_vacio[] = "";
     char original_concat_abc[] = "abc";
     char* copia_concat_vacio = strDuplicate(original_concat_vacio);
@@ -572,6 +606,7 @@ void correrTests() {
     printf("El output de Push y Pop posterior deberia ser: 1 (type=5). Output: %d (type=%d)\n", extrajo, out_type);
 
     /* Lógica de Tablero: Fila 19 */
+    // Al quitar la última fila, debe aparecer otra vacía como first_row.
     RowNode* fila_19 = getRowAt(board, 19);
     for (int c = 0; c < GRID_COLS; c++) {
         fila_19->cells[c] = 1;
@@ -600,6 +635,7 @@ void correrTests() {
     printf("El output de cantidad de filas deberia ser: 20. Output: %d\n", cantidad_filas);
 
     /* Lógica de Tablero: Filas 0 y 1 */
+    // Se prueban dos filas completas consecutivas, incluida la cabeza.
     RowNode* fila_0 = getRowAt(board, 0);
     RowNode* fila_1 = getRowAt(board, 1);
     for (int c = 0; c < GRID_COLS; c++) {
